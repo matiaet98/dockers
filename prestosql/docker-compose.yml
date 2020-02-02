@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+    presto:
+        image: centos7-systemd
+        container_name: presto
+        hostname: presto
+        domainname: presto.matinet
+        privileged: true
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.5
+                aliases:
+                    - presto.matinet
+        volumes:
+            - /sys/fs/cgroup:/sys/fs/cgroup:ro
+networks:
+    matinet:
+        external:
+            name: matinet
+

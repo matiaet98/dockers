@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+    cdh:
+        image: centos7-systemd 
+        container_name: cdh
+        hostname: cdh
+        privileged: true
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.4
+                aliases:
+                    - cdh.matinet
+        volumes:
+            - /sys/fs/cgroup:/sys/fs/cgroup:ro
+networks:
+    matinet:
+        external:
+            name: matinet
+

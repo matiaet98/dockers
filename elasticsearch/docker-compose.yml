@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+    elastic:
+        image: elasticsearch:7.5.0
+        container_name: elastic
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.10
+                aliases:
+                    - elastic.matinet
+        volumes:
+            - /mnt/docker/elasticsearch/usr/share/elasticsearch/data:/usr/share/elasticsearch/data
+        ports: 
+            - 9200:9200
+            - 9300:9300
+        environment:
+            - discovery.type=single-node
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+networks:
+    matinet:
+        external:
+            name: matinet

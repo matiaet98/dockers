@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+    sonarqube:
+        image: sonarqube
+        container_name: sonarqube
+        hostname: sonarqube.matinet
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.8
+                aliases:
+                    - sonarqube.matinet
+networks:
+    matinet:
+        external:
+            name: matinet

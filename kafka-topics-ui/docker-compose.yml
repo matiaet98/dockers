@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+    kafka-topics-ui:
+        image: landoop/kafka-topics-ui
+        container_name: kafka-topics-ui
+        hostname: kafka-topics-ui.matinet
+        environment:
+            - KAFKA_REST_PROXY_URL=http://11.0.0.4:8082
+            - PROXT=true
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.7
+                aliases:
+                    - kafka-topics-ui.matinet
+
+networks:
+    matinet:
+        external:
+            name: matinet
