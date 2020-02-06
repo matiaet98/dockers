@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+    presto:
+        image: hortonworks/nifi
+        container_name: nifi
+        hostname: nifi
+        domainname: nifi.matinet
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.6
+                aliases:
+                    - nifi.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+
