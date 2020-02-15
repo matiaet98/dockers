@@ -1,0 +1,23 @@
+version: "3.7"
+
+services:
+    kafdrop:
+        image: obsidiandynamics/kafdrop
+        container_name: kafdrop
+        hostname: kafdrop.matinet
+        environment:
+            - KAFKA_BROKERCONNECT=11.0.0.4:9092
+            - JVM_OPTS=-Xms32m -Xmx64m
+            - SERVER_SERVLET_CONTEXTPATH=/
+              
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.8
+                aliases:
+                    - kafdrop.matinet
+
+networks:
+    matinet:
+        external:
+            name: matinet
+
