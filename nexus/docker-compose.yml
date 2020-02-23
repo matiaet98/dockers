@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 services:
     nexus:
@@ -8,19 +8,17 @@ services:
         domainname: nexus.matinet
         networks:
             matinet:
-                ipv4_address: 11.0.0.5
+                ipv4_address: 11.0.0.9
                 aliases:
                     - nexus.matinet
         volumes:
             - nexus-data:/nexus-data
         ports: 
             - 8081:8081
-
 networks:
     matinet:
         external:
             name: matinet
-
 volumes:
     nexus-data:
         driver: local
