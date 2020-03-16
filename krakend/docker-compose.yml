@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+    krakend:
+        image: devopsfaith/krakend
+        container_name: krakend
+        hostname: krakend.matinet
+        domainname: matinet
+        volumes:
+                - ${PWD}/krakend:/etc/krakend
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.4
+                aliases:
+                    - krakend.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+
