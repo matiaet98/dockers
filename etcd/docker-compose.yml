@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+    etcd:
+        image: bitnami/etcd
+        container_name: etcd
+        hostname: etcd.matinet
+        domainname: matinet
+        environment:
+                - ALLOW_NONE_AUTHENTICATION=yes
+                - ETCD_ADVERTISE_CLIENT_URLS=http://etcd.matinet:2379
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.5
+                aliases:
+                    - etcd.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+
