@@ -1,0 +1,30 @@
+version: "3.7"
+
+services:
+    nextcloud:
+        image: nextcloud:latest            
+        container_name: nextcloud
+        hostname: nextcloud.matinet
+        domainname: matinet
+        ports:
+                - 3380:80
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.5
+                aliases:
+                    - nextcloud.matinet
+    office:
+        image: onlyoffice/documentserver:latest
+        container_name: office
+        hostname: office.matinet
+        domainname: matinet
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.6
+                aliases:
+                    - office.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+
