@@ -1,0 +1,55 @@
+version: '3.8'
+
+volumes:
+  datamongo: {}
+
+services:
+  nginx:
+    image: nginx:1.16-alpine
+    container_name: gio_am_nginx
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    depends_on:
+      - management
+      - gateway
+      - webui
+  mongodb:
+    image: mongo:latest
+    container_name: gio_am_mongodb
+    restart: always
+    volumes:
+      - datamongo:/data/db
+  gateway:
+    image: graviteeio/am-gateway:latest
+    container_name: gio_am_gateway
+    restart: always
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+    environment:
+      - gravitee_management_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
+      - gravitee_oauth2_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
+  management:
+    image: graviteeio/am-management-api:latest
+    container_name: gio_am_management
+    restart: always
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+    environment:
+      - gravitee_management_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
+      - gravitee_oauth2_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
+  webui:
+    image: graviteeio/am-management-ui:latest
+    container_name: gio_am_webui
+    restart: always
+    depends_on:
+      - management
+    environment:
+      - MGMT_API_URL=http://localhost:80/am
+      - MGMT_UI_URL=http://localhost:80/am/ui

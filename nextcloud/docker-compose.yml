@@ -1,13 +1,15 @@
-version: "3.7"
+version: '3.7'
 
 services:
     nextcloud:
-        image: nextcloud:latest            
+        image: nextcloud:latest
         container_name: nextcloud
         hostname: nextcloud.matinet
         domainname: matinet
+        volumes:
+            - /data/nextcloud:/var/www/html
         ports:
-                - 3380:80
+            - 80:80
         networks:
             matinet:
                 ipv4_address: 11.0.0.5
@@ -27,4 +29,3 @@ networks:
     matinet:
         external:
             name: matinet
-

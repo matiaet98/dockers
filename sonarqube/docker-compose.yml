@@ -5,6 +5,8 @@ services:
         image: sonarqube
         container_name: sonarqube
         hostname: sonarqube.matinet
+        ports:
+             - 9000:9000
         networks:
             matinet:
                 ipv4_address: 11.0.0.8

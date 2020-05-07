@@ -2,19 +2,22 @@ version: "3.7"
 
 services:
     oracle:
-        image: container-registry.oracle.com/database/enterprise:12.2.0.1-slim  
+        image: container-registry.oracle.com/database/enterprise:12.2.0.1
         container_name: oracle
         hostname: oracle
         privileged: true
         environment:
                 - DB_PDB=fisco
-                - DB_MEMORY=4GB
+                - DB_MEMORY=2GB
                 - DB_DOMAIN=matinet
+        ports:
+                - 5500:5500
+                - 1521:1521
         volumes:
-                - /data/oracle:/FISCO
+                - /data/oracle:/vol1_4tb/Volumes/oracle/data/oracle
         networks:
             matinet:
-                ipv4_address: 11.0.0.2
+                ipv4_address: 11.0.0.4
                 aliases:
                     - oracle.matinet
 

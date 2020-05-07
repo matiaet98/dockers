@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+    ldap:
+        image: osixia/openldap:latest
+        container_name: ldap
+        hostname: ldap
+        domainname: matinet
+        ports:
+            - 389:389
+            - 636:636
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.3
+                aliases:
+                    - ldap.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+

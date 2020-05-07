@@ -22,13 +22,12 @@ $CONFIG = array (
   'secret' => 'DbrLPKR0eS2FfmOEqHW4R8DEpbY297bGJ1Ho2CWWRCivI8pJ',
   'trusted_domains' => 
   array (
-    0 => '11.0.0.5',
-    2 => '10.*'
+    0 => '*',
   ),
   'datadirectory' => '/var/www/html/data',
   'dbtype' => 'sqlite3',
   'version' => '18.0.3.0',
-  'overwrite.cli.url' => 'http://11.0.0.5',
+  'overwrite.cli.url' => 'http://0.0.0.0',
   'installed' => true,
 );
 

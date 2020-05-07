@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+    wso2:
+        image: docker.wso2.com/wso2am:latest
+        container_name: wso2
+        hostname: wso2.matinet
+        domainname: matinet
+        ports:
+                - 8280:8280
+                - 8243:8243
+                - 9443:9443
+        volumes:
+                - /vol1_4tb/Volumes/wso2/conf/deployment.toml:/home/wso2carbon/wso2am-3.1.0/repository/conf/deployment.toml
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.10
+                aliases:
+                    - wso2.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+
