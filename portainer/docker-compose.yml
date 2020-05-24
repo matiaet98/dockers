@@ -6,6 +6,8 @@ services:
         container_name: portainer
         hostname: portainer
         domainname: portainer.matinet
+        ports:
+                - 9000:9000
         networks:
             matinet:
                 ipv4_address: 11.0.0.2

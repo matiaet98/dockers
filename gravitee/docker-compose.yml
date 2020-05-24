@@ -1,4 +1,15 @@
-version: "3.8"
+version: '3.8'
+
+networks:
+  frontend:
+    external:
+      name: matinet
+  storage:
+    name: storage
+
+volumes:
+  datamongo: {}
+  dataelasticsearch: {}
 
 services:
   mongodb:
@@ -24,18 +35,6 @@ services:
       nofile: 65536
     networks:
       - storage
-  nginx:
-    image: nginx:1.16-alpine
-    container_name: gio_am_nginx
-    restart: always
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - 80:80
-    depends_on:
-      - am_management
-      - am_gateway
-      - am_webui
   gateway:
     image: graviteeio/gateway:latest
     container_name: gio_apim_gateway
@@ -50,8 +49,9 @@ services:
       - gravitee_ratelimit_mongodb_uri=mongodb://mongodb:27017/gravitee?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
       - gravitee_reporters_elasticsearch_endpoints_0=http://elasticsearch:9200
     networks:
-      - storage
-      - frontend
+      frontend:
+        ipv4_address: 11.0.0.7
+      storage: {}
   management_api:
     image: graviteeio/management-api:latest
     container_name: gio_apim_management_api
@@ -68,59 +68,20 @@ services:
       - gravitee_management_mongodb_uri=mongodb://mongodb:27017/gravitee?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
       - gravitee_analytics_elasticsearch_endpoints_0=http://elasticsearch:9200
     networks:
-      - storage
-      - frontend
+      storage: {}
+      frontend:
+        ipv4_address: 11.0.0.8
   management_ui:
     image: graviteeio/management-ui:latest
     container_name: gio_apim_management_ui
     restart: always
     ports:
-      - "8084:80"
+      - 80:80
     depends_on:
       - management_api
     environment:
-      - MGMT_API_URL=http:\/\/localhost:8083\/management\/
+      - MGMT_API_URL=http:\/\/gaia.matinet:8083\/management\/
     networks:
-      - frontend
-  am_gateway:
-    image: graviteeio/am-gateway:latest
-    container_name: gio_am_gateway
-    restart: always
-    links:
-      - mongodb
-    depends_on:
-      - mongodb
-    environment:
-      - gravitee_management_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
-      - gravitee_oauth2_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
-  am_management:
-    image: graviteeio/am-management-api:latest
-    container_name: gio_am_management
-    restart: always
-    links:
-      - mongodb
-    depends_on:
-      - mongodb
-    environment:
-      - gravitee_management_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
-      - gravitee_oauth2_mongodb_uri=mongodb://mongodb:27017/graviteeam?serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000
-  am_webui:
-    image: graviteeio/am-management-ui:latest
-    container_name: gio_am_webui
-    restart: always
-    depends_on:
-      - am_management
-    environment:
-      - MGMT_API_URL=http://localhost:80/am
-      - MGMT_UI_URL=http://localhost:80/am/ui
-    
-networks:
-  frontend:
-    external:
-      name: matinet
-  storage:
-    name: storage
+      frontend:
+        ipv4_address: 11.0.0.9
 
-volumes:
-  datamongo: {}
-  dataelasticsearch: {}

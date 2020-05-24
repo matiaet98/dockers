@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+    keycloak:
+        image: quay.io/keycloak/keycloak:10.0.1  
+        container_name: keycloak
+        hostname: keycloak
+        ports:
+                - 8080:8080
+                - 8443:8443
+        environment:
+                - KEYCLOAK_USER=admin
+                - KEYCLOAK_PASSWORD=admin
+                - DB_VENDOR=postgres
+                - DB_ADDR=11.0.0.5
+                - DB_DATABASE=keycloak
+                - DB_USER=keycloak
+                - DB_PASSWORD=keycloak
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.6
+                aliases:
+                    - keycloak.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+

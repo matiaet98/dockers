@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+    konga:
+        image: pantsel/konga
+        container_name: konga
+        hostname: konga
+        ports:
+                - 1337:1337
+        environment:
+                - "NODE_ENV=production"
+                - "TOKEN_SECRET=a3d17f45-3675-44be-8e4c-1b10529af671"
+                - "KONG_DATABASE=postgres"
+                - "DB_HOST=postgres"
+                - "DB_DATABASE=kong"
+                - "DB_USER=kong"
+                - "DB_PASSWORD=kong"
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.11
+                aliases:
+                    - konga.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+
