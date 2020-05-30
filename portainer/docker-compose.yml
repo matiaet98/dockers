@@ -5,17 +5,8 @@ services:
         image: portainer/portainer:latest
         container_name: portainer
         hostname: portainer
-        domainname: portainer.matinet
         ports:
                 - 9000:9000
-        networks:
-            matinet:
-                ipv4_address: 11.0.0.2
-                aliases:
-                    - portainer.matinet
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-networks:
-    matinet:
-        external:
-            name: matinet
+

@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+    prome:
+        image: prom/prometheus:latest
+        container_name: prome
+        hostname: prome
+        ports:
+                - 9090:9090
+        networks:
+            matinet:
+                ipv4_address: 11.0.0.30
+                aliases:
+                    - prome.matinet
+networks:
+    matinet:
+        external:
+            name: matinet
+

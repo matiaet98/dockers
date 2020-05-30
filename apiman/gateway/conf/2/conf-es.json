@@ -3,8 +3,8 @@
     "apiman": {
       "es": {
         "protocol": "http",
-        "host": "elastic",
-        "port": 9200,
+        "host": "gaia",
+        "port": 9203,
         "username": null,
         "password": null,
         "timeout": 10000
@@ -185,8 +185,8 @@
         "config": {}
     }
   },  
-  "hostname": "apiman-gateway2",
-  //"publicEndpoint": "http://apiman-gateway2:8081",
+  "hostname": "gateway2",
+  "publicEndpoint": "http://gaia:28082",
 
   // Verticle configuration
   // Port - The port a given verticle listens on (where relevant)
@@ -198,7 +198,7 @@
     },
     // Configure the following SSL section to enable SSL/TLS.
     "https": {
-      "port": 8443,
+      "port": 8444,
       "count": 0
     },
     // The Gateway API; this will be the port to set in the UI.
@@ -226,6 +226,7 @@
       // A limitation in the current OAuth2 implementation means a credentials section is required
       // even if your client is not set to "confidential". Leave this dummy section if you're using non-confidential.
       "credentials": {
+        "secret": "b918230d-db5c-4c79-aab0-738a4c026d93"
       },
       "truststore": "/usr/src/apiman/apiman-distro-vertx/apiman.jks",
       "truststore-password": "secret"

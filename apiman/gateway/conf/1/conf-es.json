@@ -3,8 +3,8 @@
     "apiman": {
       "es": {
         "protocol": "http",
-        "host": "elastic",
-        "port": 9200,
+        "host": "gaia",
+        "port": 9202,
         "username": null,
         "password": null,
         "timeout": 10000
@@ -185,8 +185,8 @@
         "config": {}
     }
   },  
-  "hostname": "apiman-gateway1",
-  //"publicEndpoint": "https://gaia:8444",
+  "hostname": "gateway1",
+  "publicEndpoint": "http://gaia:18082",
 
   // Verticle configuration
   // Port - The port a given verticle listens on (where relevant)
@@ -223,19 +223,12 @@
       "disable-trust-manager": true,
       "allow-any-hostname" : true,
       "resource": "apiman-gateway-api",
-      // A limitation in the current OAuth2 implementation means a credentials section is required
-      // even if your client is not set to "confidential". Leave this dummy section if you're using non-confidential.
       "credentials": {
         "secret": "b918230d-db5c-4c79-aab0-738a4c026d93"
       },
       "truststore": "/usr/src/apiman/apiman-distro-vertx/apiman.jks",
       "truststore-password": "secret"
-      // "client-keystore": "/usr/src/apiman/apiman-distro-vertx/apiman.jks",
-      // "client-keystore-password": "secret"
-      // End paste here
     }
   },
-
-  // When reporting an API's endpoint, prefer secure (i.e. https). You should probably change this after enabling HTTPS.
   "preferSecure": false
 }
