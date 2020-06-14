@@ -14,6 +14,7 @@ docker network create kong-network
 docker volume create kong-postgres-vol
 docker volume create konga-postgres-vol
 docker volume create kong-prome-vol
+docker volume create kong-elastic-vol
 
 # create databases
 
@@ -122,3 +123,37 @@ docker run \
 -p 16686:16686 \
 -p 9411:9411 \
 jaegertracing/all-in-one:1.18
+
+docker run \
+--detach \
+--name kong-elastic \
+--hostname kong-elastic \
+--network kong-network \
+--ulimit memlock=-1 \
+-e "discovery.type=single-node" \
+-e "opendistro_security.ssl.http.enabled=false" \
+-v kong-elastic-vol:/usr/share/elasticsearch/data \
+-p 9200:9200 \
+-p 9600:9600 \
+amazon/opendistro-for-elasticsearch:1.7.0
+
+
+docker run \
+--detach \
+--name kong-kibana \
+--hostname kong-kibana \
+--network kong-network \
+-e "ELASTICSEARCH_URL=http://kong-elastic:9200" \
+-e "ELASTICSEARCH_HOSTS=http://kong-elastic:9200" \
+-p 5601:5601 \
+amazon/opendistro-for-elasticsearch-kibana:1.7.0
+
+docker run \
+--detach \
+--name kong-logstash \
+--hostname kong-logstash \
+--network kong-network \
+-v $(pwd)/resources/logstash.conf:/usr/share/logstash/pipeline/logstash.conf \
+-e "LOG_LEVEL=debug" \
+-p 5044:5044 \
+docker.elastic.co/logstash/logstash-oss:7.7.0

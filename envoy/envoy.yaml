@@ -1,0 +1,41 @@
+static_resources:
+  listeners:
+  - address:
+      socket_address:
+        protocol: tcp
+        address: 0.0.0.0
+        port_value: 1234
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        config:
+          stat_prefix: ingress_http
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: backend
+              domains:
+              - "*"
+              routes:
+              - match:
+                  prefix: "/"
+                route:
+                  cluster: kong
+          http_filters:
+          - name: envoy.filters.http.router
+  clusters:
+  - name: kong
+    type: logical_dns
+    connect_timeout: 0.25s
+    hosts:
+    - socket_address:
+        address: kong
+        port_value: 8001
+
+admin:
+  access_log_path: "/dev/null"
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 4444
+
