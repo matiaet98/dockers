@@ -1,0 +1,61 @@
+version: '3.7'
+
+volumes:
+  wekan-db:
+    driver: local
+  wekan-db-dump:
+    driver: local
+
+networks:
+  wekan-tier:
+    ipam:
+      driver: default
+      config:
+        - subnet: "11.1.0.0/25"
+
+
+services:
+  wekandb:
+    image: mongo:4
+    container_name: wekandb
+    restart: on-failure
+    command: mongod --oplogSize 128
+    networks:
+      wekan-tier:
+        ipv4_address: 11.1.0.2
+    volumes:
+      - wekan-db:/data/db
+  wekan:
+    image: wekanteam/wekan:latest
+    container_name: wekan
+    restart: on-failure
+    networks:
+      wekan-tier:
+        ipv4_address: 11.1.0.3
+    environment:
+      - MONGO_URL=mongodb://wekandb:27017/wekan
+      - ROOT_URL=http://terra
+      - MAIL_URL=smtp://wekan.noreply:faklmo09.@terra:25/?ignoreTLS=true&tls={rejectUnauthorized:false}
+      - MAIL_FROM=Wekan Notifications <noreply.wekan@matinet.duckdns.org>
+      - WITH_API=true
+      - RICHER_CARD_COMMENT_EDITOR=false
+      - SCROLLINERTIA=0
+      - SCROLLAMOUNT=auto
+      - CARD_OPENED_WEBHOOK_ENABLED=true
+      - BIGEVENTS_PATTERN=NONE
+      - NOTIFY_DUE_DAYS_BEFORE_AND_AFTER=1,0
+      - CORS=*
+      - BROWSER_POLICY_ENABLED=true
+    depends_on:
+      - wekandb
+  envoy:
+    image: envoyproxy/envoy-alpine:v1.14-latest
+    container_name: wekan-envoy
+    hostname: wekan-envoy
+    restart: unless-stopped
+    depends_on:
+      - wekan
+    network_mode: host
+    volumes:
+      - ${CONFIG}:/etc/envoy/envoy.yaml:ro
+    command: envoy -c /etc/envoy/envoy.yaml

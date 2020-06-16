@@ -1,0 +1,21 @@
+version: '3.7'
+
+volumes:
+  config-vol: {}
+  logs-vol: {}
+  data-vol: {}
+
+services:
+  gitlab:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: on-failure
+    hostname: gitlab
+    container_name: gitlab
+    ports:
+      - 6443:443
+      - 6680:80
+      - '2222:22'
+    volumes:
+      - config-vol:/etc/gitlab
+      - logs-vol:/var/log/gitlab
+      - data-vol:/var/opt/gitlab
