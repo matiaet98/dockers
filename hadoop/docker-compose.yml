@@ -1,0 +1,29 @@
+version: "3.7"
+
+services:
+    hadoop-namenode:
+        #build: namenode.dockerfile
+        image: matiaet98/hadoop-namenode:latest
+        container_name: hadoop-namenode
+        hostname: hadoop-namenode
+        ports:
+          - 9000:9000
+          - 9870:9870
+          - 9871:9871
+          - 8022:8022
+        volumes:
+            - ./namenode:/hadoop/namenode
+            - ./namenode-conf/core-site.xml:/hadoop/etc/hadoop/core-site.xml
+            - ./namenode-conf/hdfs-site.xml:/hadoop/etc/hadoop/hdfs-site.xml
+            - ./namenode-conf/hadoop-env.sh:/hadoop/etc/hadoop/hadoop-env.sh
+            - ./namenode-conf/workers:/hadoop/etc/hadoop/workers
+    hadoop-datanode1:
+        #build: namenode.dockerfile
+        image: matiaet98/hadoop-datanode:latest
+        container_name: hadoop-datanode1
+        hostname: hadoop-datanode1
+        volumes:
+            - ./datanode:/hadoop/datanode
+            - ./datanode-conf/core-site.xml:/hadoop/etc/hadoop/core-site.xml
+            - ./datanode-conf/hdfs-site.xml:/hadoop/etc/hadoop/hdfs-site.xml
+            - ./datanode-conf/hadoop-env.sh:/hadoop/etc/hadoop/hadoop-env.sh
