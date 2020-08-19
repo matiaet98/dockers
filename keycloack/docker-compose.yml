@@ -43,7 +43,7 @@ services:
     - DB_DATABASE=${POSTGRES_DB}
     - DB_USER=${POSTGRES_USER}
     - DB_PASSWORD=${POSTGRES_PASSWORD}
-    - KEYCLOAK_HOSTNAME=poc-api-homo-1
+    - KEYCLOAK_HOSTNAME=gaia.matinet
     - KEYCLOAK_HTTPS_PORT=443
     - KEYCLOAK_ALWAYS_HTTPS=true
   keycloak-nginx:
