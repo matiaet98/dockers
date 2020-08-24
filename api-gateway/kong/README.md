@@ -5,7 +5,7 @@
 ### 1. Crear la imagen customizada de Kong
 
 ```bash
-docker build -t arquitectura/kong:latest ./kong.dockerfile
+docker build --rm -t arquitectura/kong:2.1.2 -f kong.dockerfile .
 ```
 
 ### 2. Editar el archivo .env
