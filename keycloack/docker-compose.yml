@@ -1,23 +1,18 @@
 version: "3.7"
 
-networks:
-  keycloak-net:
-    ipam:
-      driver: default
-      config:
-      - subnet: "192.170.0.0/24"
-
 volumes:
-  keycloak-vol: {}
+  keycloak-vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${KEYCLOAK_VOL}
 
 services:
   keycloak-postgres:
     image: postgres:12-alpine
     container_name: keycloak-postgres
     hostname: keycloak-postgres
-    networks:
-      keycloak-net:
-        ipv4_address: 192.170.0.2
     restart: unless-stopped
     volumes:
     - keycloak-vol:/var/lib/postgresql/data
@@ -26,24 +21,23 @@ services:
     - POSTGRES_DB=${POSTGRES_DB}
     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   keycloak:
-    image: quay.io/keycloak/keycloak:10.0.2
+    image: quay.io/keycloak/keycloak:11.0.2
     container_name: keycloak
     hostname: keycloak
-    networks:
-      keycloak-net:
-        ipv4_address: 192.170.0.3
     restart: unless-stopped
+    ports:
+      - 80:8080
     depends_on:
     - keycloak-postgres
     environment:
     - KEYCLOAK_USER=${KEYCLOAK_USER}
     - KEYCLOAK_PASSWORD=${KEYCLOAK_PASSWORD}
     - DB_VENDOR=postgres
-    - DB_ADDR=192.170.0.2
+    - DB_ADDR=keycloak-postgres
     - DB_DATABASE=${POSTGRES_DB}
     - DB_USER=${POSTGRES_USER}
     - DB_PASSWORD=${POSTGRES_PASSWORD}
-    - KEYCLOAK_HOSTNAME=gaia.matinet
+    - KEYCLOAK_HOSTNAME=${HOSTNAME}
     - KEYCLOAK_HTTPS_PORT=443
     - KEYCLOAK_ALWAYS_HTTPS=true
   keycloak-nginx:
@@ -55,5 +49,5 @@ services:
     - keycloak
     network_mode: host
     volumes:
-    - ./default.conf:/etc/nginx/conf.d/default.conf:ro
-    - ./certs:/etc/nginx/certs
+    - $PWD/config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    - $PWD/certs:/etc/nginx/certs:ro
