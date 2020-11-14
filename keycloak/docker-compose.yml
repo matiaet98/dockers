@@ -17,8 +17,7 @@ services:
     volumes:
     - keycloak-vol:/var/lib/postgresql/data
     environment:
-    - POSTGRES_USER=${POSTGRES_USER}
-    - POSTGRES_DB=${POSTGRES_DB}
+    - POSTGRES_USER=keycloak
     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
   keycloak:
     image: quay.io/keycloak/keycloak:11.0.2
@@ -30,14 +29,13 @@ services:
     depends_on:
     - keycloak-postgres
     environment:
-    - KEYCLOAK_USER=${KEYCLOAK_USER}
+    - KEYCLOAK_USER=keycloak
     - KEYCLOAK_PASSWORD=${KEYCLOAK_PASSWORD}
     - DB_VENDOR=postgres
+    - DB_DATABASE=keycloak
+    - DB_USER=keycloak
     - DB_ADDR=keycloak-postgres
-    - DB_DATABASE=${POSTGRES_DB}
-    - DB_USER=${POSTGRES_USER}
     - DB_PASSWORD=${POSTGRES_PASSWORD}
-    - KEYCLOAK_HOSTNAME=${HOSTNAME}
     - KEYCLOAK_HTTPS_PORT=443
     - KEYCLOAK_ALWAYS_HTTPS=true
   keycloak-nginx:
@@ -51,3 +49,4 @@ services:
     volumes:
     - $PWD/config/nginx/default.conf:/etc/nginx/conf.d/default.conf
     - $PWD/certs:/etc/nginx/certs:ro
+

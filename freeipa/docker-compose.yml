@@ -1,0 +1,35 @@
+version: "3.7"
+
+volumes:
+  freeipa-vol:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${FREEIPA_VOL}
+
+services:
+  freeipa-server:
+    image: docker.io/freeipa/freeipa-server:fedora-33
+    container_name: freeipa-server
+    hostname: ${FQDN}
+    restart: unless-stopped
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    command: ["ipa-server-install", "-U", "-r", "${FQDN}", "-p", "${PASSWORD}", "-a", "${PASSWORD}", "--no-ntp"]
+    volumes:
+      - freeipa-vol:/data:Z
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    ports:
+      - 1080:80
+      - 10443:10443
+      - 10389:389
+      - 10636:636
+      - 1088:88
+      - 1088:88/udp
+      - 1053:53
+      - 1053:53/udp
+      - 10464:464
+      - 10464:464/udp
+      - 10123:123
+      - 10123:123/udp

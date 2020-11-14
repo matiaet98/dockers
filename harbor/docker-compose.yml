@@ -1,0 +1,233 @@
+version: '3.8'
+services:
+  registry:
+    image: goharbor/registry-photon:v2.1.1
+    container_name: registry
+    restart: always
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    volumes:
+      - /data/harbor/registry:/storage
+      - ./config/registry/:/etc/registry/:z
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    networks:
+      - harbor
+  registryctl:
+    image: goharbor/harbor-registryctl:v2.1.1
+    container_name: registryctl
+    restart: always
+    environment:
+      - CORE_SECRET=${CORE_SECRET}
+      - JOBSERVICE_SECRET=${JOBSERVICE_SECRET}
+    volumes:
+      - /data/harbor/registry:/storage
+      - ./config/registry/:/etc/registry/
+      - ./config/registryctl/config.yml:/etc/registryctl/config.yml
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    networks:
+      - harbor
+  postgresql:
+    image: goharbor/harbor-db:v2.1.1
+    container_name: harbor-db
+    restart: always
+    volumes:
+      - /data/harbor/database:/var/lib/postgresql/data
+    networks:
+      harbor:
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  redis:
+    image: goharbor/redis-photon:v2.1.1
+    container_name: redis
+    restart: always
+    volumes:
+      - /data/harbor/redis:/var/lib/redis
+    networks:
+      harbor:
+      harbor-chartmuseum:
+        aliases:
+          - redis
+  trivy-adapter:
+    container_name: trivy-adapter
+    image: goharbor/trivy-adapter-photon:v2.1.1
+    restart: always
+    depends_on:
+      - redis
+    networks:
+      - harbor
+    volumes:
+      - /data/trivy-adapter/trivy:/home/scanner/.cache/trivy
+      - /data/trivy-adapter/reports:/home/scanner/.cache/reports
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    environment:
+      - SCANNER_LOG_LEVEL=info
+      - SCANNER_REDIS_URL=redis://redis:6379/5?idle_timeout_seconds=30
+      - SCANNER_STORE_REDIS_URL=redis://redis:6379/5?idle_timeout_seconds=30
+      - SCANNER_STORE_REDIS_NAMESPACE=harbor.scanner.trivy:store
+      - SCANNER_JOB_QUEUE_REDIS_URL=redis://redis:6379/5?idle_timeout_seconds=30
+      - SCANNER_JOB_QUEUE_REDIS_NAMESPACE=harbor.scanner.trivy:job-queue
+      - SCANNER_TRIVY_CACHE_DIR=/home/scanner/.cache/trivy
+      - SCANNER_TRIVY_REPORTS_DIR=/home/scanner/.cache/reports
+      - SCANNER_TRIVY_VULN_TYPE=os,library
+      - SCANNER_TRIVY_SEVERITY=UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+      - SCANNER_TRIVY_IGNORE_UNFIXED=False
+      - SCANNER_TRIVY_SKIP_UPDATE=False
+      - SCANNER_TRIVY_GITHUB_TOKEN=
+      - SCANNER_TRIVY_INSECURE=False
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - NO_PROXY=core,notary-signer,nginx,chartmuseum,redis,registryctl,clair-adapter,.internal,localhost,postgresql,jobservice,.local,db,127.0.0.1,registry,clair,log,portal,notary-server,trivy-adapter
+  chartmuseum:
+    container_name: chartmuseum
+    image: goharbor/chartmuseum-photon:v2.1.1
+    restart: always
+    networks:
+      - harbor-chartmuseum
+    volumes:
+      - /data/harbor/chart_storage:/chart_storage
+      - ./config/chartserver:/etc/chartserver
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    environment:
+      - PORT=9999
+      - CACHE=redis
+      - CACHE_REDIS_ADDR=redis:6379
+      - CACHE_REDIS_DB=3
+      - BASIC_AUTH_USER=chart_controller
+      - BASIC_AUTH_PASS=
+      - DEPTH=1
+      - STORAGE=local
+      - STORAGE_LOCAL_ROOTDIR=/chart_storage
+      - DEBUG=false
+      - LOG_JSON=true
+      - DISABLE_METRICS=false
+      - DISABLE_API=false
+      - DISABLE_STATEFILES=false
+      - ALLOW_OVERWRITE=true
+      - CHART_URL=
+      - AUTH_ANONYMOUS_GET=false
+      - CONTEXT_PATH=
+      - INDEX_LIMIT=0
+      - MAX_STORAGE_OBJECTS=0
+      - MAX_UPLOAD_SIZE=20971520
+      - CHART_POST_FORM_FIELD_NAME=chart
+      - PROV_POST_FORM_FIELD_NAME=prov
+  jobservice:
+    image: goharbor/harbor-jobservice:v2.1.1
+    container_name: harbor-jobservice
+    environment:
+      - CORE_SECRET=${CORE_SECRET}
+      - REGISTRY_URL=http://registry:5000
+      - JOBSERVICE_SECRET=${JOBSERVICE_SECRET}
+      - CORE_URL=http://core:8080
+      - REGISTRY_CONTROLLER_URL=http://registryctl:8080
+      - JOBSERVICE_WEBHOOK_JOB_MAX_RETRY=10
+      - REGISTRY_CREDENTIAL_USERNAME=harbor_registry_user
+      - REGISTRY_CREDENTIAL_PASSWORD=${REGISTRY_CREDENTIAL_PASSWORD}
+    restart: always
+    volumes:
+      - /data/harbor/job_logs:/var/log/jobs
+      - ./config/jobservice/config.yml:/etc/jobservice/config.yml
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    networks:
+      - harbor
+  portal:
+    image: goharbor/harbor-portal:v2.1.1
+    container_name: harbor-portal
+    restart: always
+    volumes:
+      - ./config/portal/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - harbor
+  core:
+    image: goharbor/harbor-core:v2.1.1
+    container_name: harbor-core
+    restart: always
+    environment:
+      - CONFIG_PATH=/etc/core/app.conf
+      - UAA_CA_ROOT=/etc/core/certificates/uaa_ca.pem
+      - _REDIS_URL_CORE=redis://redis:6379?idle_timeout_seconds=30
+      - SYNC_QUOTA=true
+      - CHART_CACHE_DRIVER=redis
+      - _REDIS_URL_REG=redis://redis:6379/1?idle_timeout_seconds=30
+      - LOG_LEVEL=info
+      - EXT_ENDPOINT=${EXT_ENDPOINT}
+      - DATABASE_TYPE=postgresql
+      - POSTGRESQL_HOST=postgresql
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRESQL_DATABASE=registry
+      - POSTGRESQL_SSLMODE=disable
+      - POSTGRESQL_MAX_IDLE_CONNS=50
+      - POSTGRESQL_MAX_OPEN_CONNS=1000
+      - REGISTRY_URL=http://registry:5000
+      - PORTAL_URL=http://portal:8080
+      - TOKEN_SERVICE_URL=http://core:8080/service/token
+      - HARBOR_ADMIN_PASSWORD=${HARBOR_ADMIN_PASSWORD}
+      - MAX_JOB_WORKERS=10
+      - CORE_SECRET=${CORE_SECRET}
+      - JOBSERVICE_SECRET=${JOBSERVICE_SECRET}
+      - WITH_NOTARY=False
+      - WITH_CLAIR=False
+      - WITH_TRIVY=True
+      - CORE_URL=http://core:8080
+      - CORE_LOCAL_URL=http://127.0.0.1:8080
+      - JOBSERVICE_URL=http://jobservice:8080
+      - CLAIR_ADAPTER_URL=http://clair-adapter:8080
+      - TRIVY_ADAPTER_URL=http://trivy-adapter:8080
+      - NOTARY_URL=http://notary-server:4443
+      - REGISTRY_STORAGE_PROVIDER_NAME=filesystem
+      - READ_ONLY=false
+      - RELOAD_KEY=
+      - CHART_REPOSITORY_URL=http://chartmuseum:9999
+      - REGISTRY_CONTROLLER_URL=http://registryctl:8080
+      - WITH_CHARTMUSEUM=True
+      - REGISTRY_CREDENTIAL_USERNAME=harbor_registry_user
+      - REGISTRY_CREDENTIAL_PASSWORD=${REGISTRY_CREDENTIAL_PASSWORD}
+      - CSRF_KEY=${CSRF_KEY}
+      - PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE=docker-hub,harbor
+      - PORT=8080
+    volumes:
+      - /data/harbor/ca_download/:/etc/core/ca/
+      - /data/harbor/:/data/
+      - ./config/core/certificates/:/etc/core/certificates/
+      - ./config/core/app.conf:/etc/core/app.conf
+      - /config/core/private_key.pem:/etc/core/private_key.pem
+      - ./config/core/key:/etc/core/key
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    networks:
+      harbor:
+      harbor-chartmuseum:
+        aliases:
+          - harbor-core
+    depends_on:
+      - registry
+      - redis
+      - postgresql
+  proxy:
+    image: goharbor/nginx-photon:v2.1.1
+    container_name: nginx
+    restart: always
+    volumes:
+      - ./config/nginx:/etc/nginx
+      - ./config/nginx/certs:/etc/cert
+      - ./config/shared/trust-certificates:/harbor_cust_cert
+    networks:
+      - harbor
+    ports:
+      - 80:8080
+      - 443:8443
+    depends_on:
+      - registry
+      - core
+      - portal
+
+networks:
+  harbor:
+    external: false
+  harbor-chartmuseum:
+    external: false
