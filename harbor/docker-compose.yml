@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 services:
   registry:
     image: goharbor/registry-photon:v2.1.1
@@ -196,7 +196,7 @@ services:
       - /data/harbor/:/data/
       - ./config/core/certificates/:/etc/core/certificates/
       - ./config/core/app.conf:/etc/core/app.conf
-      - /config/core/private_key.pem:/etc/core/private_key.pem
+      - ./config/core/private_key.pem:/etc/core/private_key.pem
       - ./config/core/key:/etc/core/key
       - ./config/shared/trust-certificates:/harbor_cust_cert
     networks:
